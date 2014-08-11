@@ -410,7 +410,10 @@ public class SearchRetrieveRequest {
             return;
         }
         logger.debug("executing CQL query {} --> Elasticsearch query {}", cqlQuery, elasticseachQuery);
-        searchRequestBuilder.setExtraSource(elasticseachQuery).execute(listener);
+        searchRequestBuilder
+                .setListenerThreaded(false)
+                .setExtraSource(elasticseachQuery)
+                .execute(listener);
     }
 
     public String getQuerySource() {

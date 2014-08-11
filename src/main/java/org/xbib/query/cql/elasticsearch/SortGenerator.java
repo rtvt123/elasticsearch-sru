@@ -15,7 +15,7 @@ import java.util.Stack;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
- * Build sort in JSON syntax from abstract syntax tree
+ * Build sort in Elasticsearch JSON syntax from abstract syntax tree
  */
 public class SortGenerator implements Visitor {
 
@@ -48,23 +48,30 @@ public class SortGenerator implements Visitor {
     public void visit(Name node) {
         try {
             if (modifiers.isEmpty()) {
-                builder.value(node.getName().toString());
+                builder.value(node.getName());
             } else {
-                builder.startObject().field(node.getName().toString()).startObject();
+                builder.startObject().field(node.getName()).startObject();
                 while (!modifiers.isEmpty()) {
                     Modifier mod = modifiers.pop();
                     String s = mod.getName().toString();
-                    if (s.equals("ascending")) {
-                        builder.field("order", "asc");
-
-                    } else if (s.equals("descending")) {
-                        builder.field("order", "desc");
-
-                    } else {
-                        builder.field(mod.getName().toString(), mod.getTerm());
-
+                    switch (s) {
+                        case "ascending":
+                        case "sort.ascending": {
+                            builder.field("order", "asc");
+                            break;
+                        }
+                        case "descending":
+                        case "sort.descending": {
+                            builder.field("order", "desc");
+                            break;
+                        }
+                        default: {
+                            builder.field(mod.getName().toString(), mod.getTerm());
+                            break;
+                        }
                     }
                 }
+                // TODO ES 1.4 http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-sort.html#_ignoring_unmapped_fields
                 builder.field("ignore_unmapped", true);
                 builder.field("missing", "_last");
                 builder.endObject();

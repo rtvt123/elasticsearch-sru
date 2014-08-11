@@ -3,6 +3,7 @@ package org.xbib.elasticsearch.rest.sru;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.inject.Inject;
@@ -12,11 +13,13 @@ import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
+import org.elasticsearch.search.Scroll;
 import org.xbib.query.sru.SearchRetrieveRequest;
 import org.xbib.query.sru.SearchRetrieveConstants;
 
 import java.io.IOException;
 
+import static org.elasticsearch.common.unit.TimeValue.parseTimeValue;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.elasticsearch.rest.RestRequest.Method.POST;
 
@@ -52,7 +55,16 @@ public class SRURestSearchAction extends BaseRestHandler {
             cql = request.content().toUtf8();
         }
         try {
-            SearchRetrieveRequest sruRequest = new SearchRetrieveRequest(new SearchRequestBuilder(client))
+            SearchRequestBuilder searchRequestBuilder = new SearchRequestBuilder(client);
+            searchRequestBuilder.setSearchType(request.param("search_type"));
+            String scroll = request.param("scroll");
+            if (scroll != null) {
+                searchRequestBuilder.setScroll(new Scroll(parseTimeValue(scroll, null)));
+            }
+            searchRequestBuilder.setRouting(request.param("routing"));
+            searchRequestBuilder.setPreference(request.param("preference"));
+            searchRequestBuilder.setIndicesOptions(IndicesOptions.fromRequest(request, IndicesOptions.strictExpandOpenAndForbidClosed()));
+            SearchRetrieveRequest sruRequest = new SearchRetrieveRequest(searchRequestBuilder)
                     .index(Strings.splitStringByCommaToArray(request.param("index")))
                     .type(Strings.splitStringByCommaToArray(request.param("type")))
                     .setQuery(cql)
