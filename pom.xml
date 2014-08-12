@@ -37,9 +37,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:jprante/elasticsearch-sru.git</connection>
-        <developerConnection>scm:git:git@github.com:jprante/elasticsearch-sru.git</developerConnection>
-        <url>http://github.com/jprante/elasticsearch-sru</url>
+        <connection>scm:git:git@github.com:xbib/elasticsearch-sru.git</connection>
+        <developerConnection>scm:git:git@github.com:xbib/elasticsearch-sru.git</developerConnection>
+        <url>http://github.com/xbib/elasticsearch-sru</url>
     </scm>
 
     <distributionManagement>
