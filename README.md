@@ -43,11 +43,11 @@ Do not forget to restart the node after installing.
 
 ## Project docs
 
-The Maven project site is available at [Github](http://jprante.github.io/elasticsearch-sru)
+The Maven project site is available at [Github](http://xbib.github.io/elasticsearch-sru)
 
 ## Issue
 
-Posting issues is most welcome at [Github](http://github.com/jprante/elasticsearch/issues)
+Posting issues is most welcome at [Github](http://github.com/xbib/elasticsearch/issues)
 
 # IMPORTANT NOTICE
 
