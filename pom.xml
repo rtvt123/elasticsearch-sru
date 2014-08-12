@@ -10,7 +10,7 @@
 
     <groupId>org.xbib.elasticsearch.plugin</groupId>
     <artifactId>elasticsearch-sru</artifactId>
-    <version>1.3.0.1</version>
+    <version>1.3.0.2</version>
     <packaging>jar</packaging>
 
     <inceptionYear>2014</inceptionYear>
@@ -49,10 +49,37 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Repository</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>xbib</id>
+            <name>xbib repository</name>
+            <url>http://xbib.org/repository</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+
     <properties>
         <github.global.server>github</github.global.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compiler.version>1.7</java.compiler.version>
+        <java.compiler.version>1.8</java.compiler.version>
         <elasticsearch.version>1.3.1</elasticsearch.version>
     </properties>
 
@@ -62,6 +89,14 @@
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xbib</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>1.0.0.Beta4</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>

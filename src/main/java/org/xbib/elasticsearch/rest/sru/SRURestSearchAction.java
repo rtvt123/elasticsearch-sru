@@ -14,6 +14,7 @@ import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.elasticsearch.search.Scroll;
+import org.xbib.elasticsearch.module.sru.HandlebarsService;
 import org.xbib.query.sru.SearchRetrieveRequest;
 import org.xbib.query.sru.SearchRetrieveConstants;
 
@@ -25,21 +26,18 @@ import static org.elasticsearch.rest.RestRequest.Method.POST;
 
 public class SRURestSearchAction extends BaseRestHandler {
 
+    private final HandlebarsService handlebars;
+
     @Inject
-    public SRURestSearchAction(Settings settings, Client client, RestController controller) {
+    public SRURestSearchAction(Settings settings, Client client, RestController controller, HandlebarsService handlebars) {
         super(settings, client);
+        this.handlebars = handlebars;
         controller.registerHandler(GET, "/_sru", this);
         controller.registerHandler(POST, "/_sru", this);
         controller.registerHandler(GET, "/{index}/_sru", this);
         controller.registerHandler(POST, "/{index}/_sru", this);
         controller.registerHandler(GET, "/{index}/{type}/_sru", this);
         controller.registerHandler(POST, "/{index}/{type}/_sru", this);
-        controller.registerHandler(GET, "/_sru/template", this);
-        controller.registerHandler(POST, "/_sru/template", this);
-        controller.registerHandler(GET, "/{index}/_sru/template", this);
-        controller.registerHandler(POST, "/{index}/_sru/template", this);
-        controller.registerHandler(GET, "/{index}/{type}/_sru/template", this);
-        controller.registerHandler(POST, "/{index}/{type}/_sru/template", this);
     }
 
     @Override
@@ -73,8 +71,10 @@ public class SRURestSearchAction extends BaseRestHandler {
                     .setFilter(request.param(SearchRetrieveConstants.FILTER_PARAMETER))
                     .setFacetLimit(request.param(SearchRetrieveConstants.FACET_LIMIT_PARAMETER))
                     .setFacetCount(request.param(SearchRetrieveConstants.FACET_COUNT_PARAMETER))
+                    .setFacetStart(request.param(SearchRetrieveConstants.FACET_START_PARAMETER)) // not supported
+                    .setFacetSort(request.param(SearchRetrieveConstants.FACET_SORT_PARAMETER)) // not supported
                     .setResultSetTTL(request.paramAsInt(SearchRetrieveConstants.RESULT_SET_TTL_PARAMETER, 0));
-            sruRequest.execute(new RestStatusToXContentListener<SearchResponse>(channel));
+            sruRequest.execute(new SRUToXContentListener(channel, request, handlebars));
         } catch (IOException e) {
             throw new ElasticsearchException(e.getMessage(), e);
         }
