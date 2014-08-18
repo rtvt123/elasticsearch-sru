@@ -16,7 +16,7 @@ import java.io.IOException;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
- * Build query in JSON syntax from abstract syntax tree
+ * Build query filter in Elasticsearch JSON syntax from abstract syntax tree
  */
 public class FilterGenerator implements Visitor {
 
@@ -113,7 +113,9 @@ public class FilterGenerator implements Visitor {
                         case EQUALS: {
                             String field = arg1.toString();
                             String value = arg2 != null ? arg2.toString() : "";
-                            builder.startObject(tok2 != null && tok2.isBoundary() ? "prefix" : "term").field(field, value)
+                            builder.startObject(tok2 != null && tok2.isBoundary() ?
+                                    "prefix" : "term");
+                            builder.field(field, tok2 != null && tok2.isProtected() ? tok2.getString() : value)
                                     .endObject();
                             break;
                         }
@@ -121,7 +123,8 @@ public class FilterGenerator implements Visitor {
                             String field = arg1.toString();
                             String value = arg2 != null ? arg2.toString() : "";
                             builder.startObject("not")
-                                    .startObject(tok2 != null && tok2.isBoundary() ? "prefix" : "term").field(field, value)
+                                    .startObject(tok2 != null && tok2.isBoundary() ?
+                                            "prefix" : "term").field(field, value)
                                     .endObject().endObject();
                             break;
                         }
@@ -289,17 +292,14 @@ public class FilterGenerator implements Visitor {
                         }
                         case PROX: {
                             String field = arg1.toString();
-                            // we assume a
-                            // default of 10
-                            // words is enough
-                            // for proximity
-                            String value = arg2.toString() + "~10";
+                            // we assume a  default of 10 words is enough for proximity
+                            String value = arg2 != null ? arg2.toString() + "~10" : "";
                             builder.startObject("field").field(field, value).endObject();
                             break;
                         }
                         case TERM_FILTER: {
                             String field = arg1.toString();
-                            String value = arg2.toString();
+                            String value = arg2 != null ? arg2.toString() : "";
                             builder.startObject("term").field(field, value).endObject();
                             break;
                         }

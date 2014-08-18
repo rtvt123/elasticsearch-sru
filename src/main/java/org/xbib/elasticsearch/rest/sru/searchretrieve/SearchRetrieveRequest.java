@@ -1,11 +1,9 @@
-package org.xbib.query.sru;
+package org.xbib.elasticsearch.rest.sru.searchretrieve;
 
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.xbib.query.cql.CQLParser;
 import org.xbib.query.cql.elasticsearch.ElasticsearchQueryGenerator;
@@ -17,9 +15,9 @@ import java.io.IOException;
  */
 public class SearchRetrieveRequest {
 
-    private final static ESLogger logger = ESLoggerFactory.getLogger(SearchRetrieveRequest.class.getName());
+    private final Client client;
 
-    private final SearchRequestBuilder searchRequestBuilder;
+    private final SearchRequest searchRequest;
 
     private ElasticsearchQueryGenerator generator = new ElasticsearchQueryGenerator();
 
@@ -58,12 +56,15 @@ public class SearchRetrieveRequest {
     private String encoding;
 
     public SearchRetrieveRequest() {
-        this.searchRequestBuilder = null;
+        this.client = null;
+        this.searchRequest = null;
     }
 
-    public SearchRetrieveRequest(SearchRequestBuilder searchRequestBuilder) {
-        this.searchRequestBuilder = searchRequestBuilder;
+    public SearchRetrieveRequest(Client client, SearchRequest searchRequest) {
+        this.client = client;
+        this.searchRequest = searchRequest;
     }
+
     /**
      * The version of the request
      * @param version the version string
@@ -179,9 +180,6 @@ public class SearchRetrieveRequest {
      */
     public SearchRetrieveRequest setResultSetTTL(Integer ttl) {
         this.ttl = ttl;
-        if (searchRequestBuilder != null) {
-            searchRequestBuilder.setTimeout(TimeValue.timeValueSeconds(ttl));
-        }
         return this;
     }
 
@@ -324,38 +322,6 @@ public class SearchRetrieveRequest {
         return data;
     }
 
-
-    public SearchRetrieveRequest index(String index) {
-        this.index(new String[]{index});
-        return this;
-    }
-
-    public SearchRetrieveRequest index(String... index) {
-        if (searchRequestBuilder != null) {
-            searchRequestBuilder.setIndices(index);
-        }
-        return this;
-    }
-
-    public SearchRetrieveRequest type(String type) {
-        this.type(new String[]{type});
-        return this;
-    }
-
-    public SearchRetrieveRequest type(String... type) {
-        if (searchRequestBuilder != null) {
-            searchRequestBuilder.setTypes(type);
-        }
-        return this;
-    }
-
-    public SearchRetrieveRequest aggregations(byte[] aggregations) {
-        if (searchRequestBuilder != null) {
-            searchRequestBuilder.setAggregations(aggregations);
-        }
-        return this;
-    }
-
     public SearchRetrieveRequest from(int from) {
         generator.setFrom(from);
         return this;
@@ -366,15 +332,10 @@ public class SearchRetrieveRequest {
         return this;
     }
 
-    public SearchRetrieveRequest timeout(TimeValue timeout) {
-        if (searchRequestBuilder != null) {
-            searchRequestBuilder.setTimeout(timeout);
-        }
-        return this;
-    }
 
-    public SearchRetrieveRequest elasticsearchQuery(String query) {
-        this.elasticseachQuery = query == null || query.trim().length() == 0 ? "{\"query\":{\"match_all\":{}}}" : query;
+    public SearchRetrieveRequest setElasticsearchQuery(String query) {
+        this.elasticseachQuery = query == null || query.trim().length() == 0 ?
+                "{\"query\":{\"match_all\":{}}}" : query;
         return this;
     }
 
@@ -388,7 +349,7 @@ public class SearchRetrieveRequest {
 
     public SearchRetrieveRequest setQuery(String cql) {
         if (cql == null || cql.trim().length() == 0) {
-            from(0).size(10).elasticsearchQuery(null);
+            from(0).size(10).setElasticsearchQuery(null);
             return this;
         }
         this.cqlQuery = cql;
@@ -399,6 +360,13 @@ public class SearchRetrieveRequest {
         return cqlQuery;
     }
 
+    public String getElasticsearchQuery() {
+        if (elasticseachQuery == null) {
+            this.elasticseachQuery = createElasticsearchQuery();
+        }
+        return elasticseachQuery;
+    }
+
     public void execute(ActionListener<SearchResponse> listener) throws IOException {
         if (elasticseachQuery == null) {
             this.elasticseachQuery = createElasticsearchQuery();
@@ -406,14 +374,15 @@ public class SearchRetrieveRequest {
         if (elasticseachQuery == null) {
             return;
         }
-        if (searchRequestBuilder == null) {
+        if (client == null) {
             return;
         }
-        logger.debug("executing CQL query {} --> Elasticsearch query {}", cqlQuery, elasticseachQuery);
-        searchRequestBuilder
-                .setListenerThreaded(false)
-                .setExtraSource(elasticseachQuery)
-                .execute(listener);
+        if (searchRequest == null) {
+            return;
+        }
+        searchRequest.listenerThreaded(false);
+        searchRequest.extraSource(elasticseachQuery);
+        client.search(searchRequest, listener);
     }
 
     public String getQuerySource() {

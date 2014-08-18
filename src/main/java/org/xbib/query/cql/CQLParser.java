@@ -2046,22 +2046,23 @@ public class CQLParser implements CQLTokens {
 
 
     private CQLLexer lexer;
-        
+
+    private String input;
+
     private SortedQuery cql;
 
-    public CQLParser(String query) {
-        this(new StringReader(query));
-    }
-
-    public CQLParser(Reader reader) {
-        this.lexer = new CQLLexer(reader);
+    public CQLParser(String input) {
+        this.input = input;
+        this.lexer = new CQLLexer(new StringReader(input));
         lexer.nextToken();
     }
 
     public void yyerror (String error) {
-        throw new SyntaxException("CQL error at " 
-            + "[" + lexer.getLine() + "," + lexer.getColumn() +"]"
-            + ": " + (yyerrno >= 0 ? yyerrmsgs[yyerrno] : error) 
+        throw new SyntaxException("CQL syntax error at "
+            + "[" + lexer.getLine() + "," + lexer.getColumn() +"] in\""
+            + input
+            + "\": "
+            + (yyerrno >= 0 ? yyerrmsgs[yyerrno] : error)
             + ": " + lexer.getSemantic());
     }
     

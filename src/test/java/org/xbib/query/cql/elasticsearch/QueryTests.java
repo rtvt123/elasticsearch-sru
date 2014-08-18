@@ -2,9 +2,9 @@ package org.xbib.query.cql.elasticsearch;
 
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import org.xbib.query.sru.SearchRetrieveRequest;
+import org.junit.Assert;
+import org.junit.Test;
+import org.xbib.elasticsearch.rest.sru.searchretrieve.SearchRetrieveRequest;
 import org.xbib.query.cql.CQLParser;
 
 import java.io.IOException;
@@ -75,21 +75,19 @@ public class QueryTests extends Assert {
         SearchRetrieveRequest cqlRequest = new SearchRetrieveRequest()
                 .setQuery("dc.title = Köln");
         assertEquals(cqlRequest.getQuerySource(),
-                "{\"from\":0,\"size\":10,\"query\":{\"simple_query_string\":{\"field\":\"dc.title\",\"query\":\"Köln\",\"default_operator\":\"and\"}}}");
+                "{\"from\":0,\"size\":10,\"query\":{\"simple_query_string\":{\"query\":\"Köln\",\"fields\":[\"dc.title\"],\"default_operator\":\"and\"}}}");
     }
 
     @Test
     public void testFacetAndFilter() throws Exception {
         SearchRetrieveRequest cqlRequest = new SearchRetrieveRequest()
-                .index("*")
-                .type("*")
                 .from(0)
                 .size(10)
                 .setQuery("Köln")
                 .setFilter("dc.format = online and dc.date = 2012")
                 .setFacetLimit("10:dc.format");
         assertEquals(cqlRequest.getQuerySource(),
-                "{\"from\":0,\"size\":10,\"query\":{\"filtered\":{\"query\":{\"simple_query_string\":{\"field\":\"cql.allIndexes\",\"query\":\"Köln\",\"default_operator\":\"and\"}},\"filter\":{\"query\":{\"bool\":{\"must\":[{\"term\":{\"dc.format\":\"online\"}},{\"term\":{\"dc.date\":\"2012\"}}]}}}}},\"aggs\":{\"dc.format\":{\"terms\":{\"field\":\"dc.format\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}}}");
+                "{\"from\":0,\"size\":10,\"query\":{\"filtered\":{\"query\":{\"simple_query_string\":{\"query\":\"Köln\",\"fields\":[\"cql.allIndexes\"],\"default_operator\":\"and\"}},\"filter\":{\"query\":{\"bool\":{\"must\":[{\"term\":{\"dc.format\":\"online\"}},{\"term\":{\"dc.date\":\"2012\"}}]}}}}},\"aggregations\":{\"dc.format\":{\"terms\":{\"field\":\"dc.format\",\"size\":10,\"order\":{\"_count\":\"desc\"}}}}}");
     }
 
     private void test(String path) throws IOException {
@@ -125,7 +123,8 @@ public class QueryTests extends Assert {
         parser.getCQLQuery().accept(generator);
         String elasticsearchQuery = generator.getSourceResult();
         logger.info("{} --> {}", cql, elasticsearchQuery);
-        assertEquals(expected, elasticsearchQuery);
+        //System.err.println(cql+"|"+elasticsearchQuery);
+        assertEquals(elasticsearchQuery, expected);
     }
 
 }

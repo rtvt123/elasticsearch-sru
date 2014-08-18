@@ -4,7 +4,7 @@ import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.plugins.AbstractPlugin;
 import org.elasticsearch.rest.RestModule;
 import org.xbib.elasticsearch.module.sru.SRUModule;
-import org.xbib.elasticsearch.rest.sru.SRURestSearchAction;
+import org.xbib.elasticsearch.rest.sru.SRURestAction;
 
 import java.util.Collection;
 
@@ -28,9 +28,8 @@ public class SRUPlugin extends AbstractPlugin {
     }
 
     public void onModule(RestModule module) {
-        module.addRestAction(SRURestSearchAction.class);
+        module.addRestAction(SRURestAction.class);
     }
-
 
     @Override
     public Collection<Class<? extends Module>> modules() {

@@ -2,7 +2,6 @@ package org.xbib.query;
 
 /**
  * Query facet
- *
  */
 public interface QueryFacet<V> extends QueryOption<V> {
     /**

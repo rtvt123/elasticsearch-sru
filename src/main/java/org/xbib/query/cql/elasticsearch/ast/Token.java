@@ -27,6 +27,8 @@ public class Token implements Node {
 
     private String value;
 
+    private String stringvalue;
+
     private Boolean booleanvalue;
 
     private Long longvalue;
@@ -34,8 +36,6 @@ public class Token implements Node {
     private Double doublevalue;
 
     private Date datevalue;
-
-    private List<Date> dates;
 
     private List<String> values;
 
@@ -60,6 +60,8 @@ public class Token implements Node {
         if (this.value != null) {
             // protected?
             if (value.startsWith("\"") && value.endsWith("\"")) {
+                this.stringvalue = value;
+                this.value = value.substring(1, value.length() - 1).replaceAll("\\\\\"", "\"");
                 this.values = parseQuot(this.value);
                 tokenClass.add(TokenClass.PROTECTED);
             }
@@ -72,7 +74,7 @@ public class Token implements Node {
                 }
             }
             // prefix?
-            if (this.value.charAt(0) == '^') {
+            if (this.value.length() > 0 && this.value.charAt(0) == '^') {
                 tokenClass.add(TokenClass.BOUNDARY);
                 this.value = this.value.substring(1);
             }
@@ -125,10 +127,6 @@ public class Token implements Node {
         return datevalue;
     }
 
-    public List<Date> getDates() {
-        return dates;
-    }
-
     public List<String> getStringList() {
         return values;
     }
@@ -159,6 +157,8 @@ public class Token implements Node {
             sb.append(doublevalue);
         } else if (datevalue != null) {
             sb.append(DateUtil.formatDateISO(datevalue));
+        } else if (stringvalue != null) {
+            sb.append(stringvalue);
         } else if (value != null) {
             sb.append(value);
         }

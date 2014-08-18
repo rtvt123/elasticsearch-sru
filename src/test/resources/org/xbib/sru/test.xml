@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sru:searchRetrieveResponse
+        xmlns:sru="http://docs.oasis-open.org/ns/search-ws/sruResponse"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/sruResponse http://www.loc.gov/standards/sru/sru-2-0/schemas/sruResponse.xsd">
+    <sru:version>2.0</sru:version>
+    <sru:numberOfRecords>1</sru:numberOfRecords>
+
+    <sru:records>
+
+        <sru:record>
+            <sru:recordSchema>http://xbib.org/ns/sru/elasticsearch/source/1.0/</sru:recordSchema>
+            <sru:recordPacking>xml</sru:recordPacking>
+            <sru:recordData><source xmlns="http://xbib.org/ns/sru/elasticsearch/source/1.0/"><dc><title>Hello world</title></dc></source></sru:recordData>
+            <sru:recordIdentifier>test/test/1</sru:recordIdentifier>
+        </sru:record>
+
+    </sru:records>
+
+
+</sru:searchRetrieveResponse>

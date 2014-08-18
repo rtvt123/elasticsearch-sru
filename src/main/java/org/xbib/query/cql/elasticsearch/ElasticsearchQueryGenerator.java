@@ -55,10 +55,6 @@ public class ElasticsearchQueryGenerator implements Visitor {
 
     private XContentBuilder sort;
 
-    //private XContentBuilder filter;
-
-    //private XContentBuilder facets;
-
     public ElasticsearchQueryGenerator() {
         this.from = 0;
         this.size = 10;
@@ -92,16 +88,6 @@ public class ElasticsearchQueryGenerator implements Visitor {
         this.sort = sort;
         return this;
     }
-
-    /*public ElasticsearchQueryGenerator setFilter(XContentBuilder filter) {
-        this.filter = filter;
-        return this;
-    }*/
-
-    /*public ElasticsearchQueryGenerator setFacets(XContentBuilder facets) {
-        this.facets = facets;
-        return this;
-    }*/
 
     public ElasticsearchQueryGenerator filter(String filter) {
         try {
@@ -168,7 +154,7 @@ public class ElasticsearchQueryGenerator implements Visitor {
             }
             Node querynode = stack.pop();
             if (querynode instanceof Token) {
-                querynode = new Expression(Operator.ALL, new Name("cql.allIndexes"), querynode);
+                querynode = new Expression(Operator.EQUALS, new Name("cql.allIndexes"), querynode);
             }
             queryGen.visit((Expression) querynode);
             if (model.hasFilter()) {
@@ -272,7 +258,7 @@ public class ElasticsearchQueryGenerator implements Visitor {
                 Node esnode = stack.pop();
                 // add default context if node is a literal without a context
                 if (esnode instanceof Token && TokenType.STRING.equals(esnode.getType())) {
-                    esnode = new Expression(Operator.ALL, new Name("cql.allIndexes"), esnode);
+                    esnode = new Expression(Operator.EQUALS, new Name("cql.allIndexes"), esnode);
                 }
                 if (stack.isEmpty()) {
                     // unary expression
@@ -282,7 +268,7 @@ public class ElasticsearchQueryGenerator implements Visitor {
                     Node esnode2 = stack.pop();
                     // add default context if node is a literal without context
                     if (esnode2 instanceof Token && TokenType.STRING.equals(esnode2.getType())) {
-                        esnode2 = new Expression(Operator.ALL, new Name("cql.allIndexes"), esnode2);
+                        esnode2 = new Expression(Operator.EQUALS, new Name("cql.allIndexes"), esnode2);
                     }
                     esnode = new Expression(op, esnode2, esnode);
                 }
@@ -318,16 +304,13 @@ public class ElasticsearchQueryGenerator implements Visitor {
                 StringBuilder sb = new StringBuilder();
                 Node modifier = stack.pop();
                 while (modifier instanceof Modifier) {
-                    Node modifierName = ((Modifier) modifier).getName();
-                    //if (modifierName.toString().startsWith("mod.")) {
-                        sb.append('.').append(modifier.toString());
-                        modifier = stack.pop();
-                    //} else {
-                    //    break;
-                    //}
+                    if (sb.length() > 0) {
+                        sb.append('.');
+                    }
+                    sb.append(modifier.toString());
+                    modifier = stack.pop();
                 }
-                // push modified index to stack
-                String modifiable = modifier.toString() + sb.toString();
+                String modifiable = sb.toString();
                 stack.push(new Name(modifiable));
                 stack.push(op);
             }

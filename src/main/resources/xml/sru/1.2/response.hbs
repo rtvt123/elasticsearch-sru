@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sru:searchRetrieveResponse xmlns:sru="http://www.loc.gov/zing/srw/"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://www.loc.gov/zing/srw/ http://www.loc.gov/standards/sru/xmlFiles/srw-types.xsd">
+    <sru:version>1.2</sru:version>
+    <sru:numberOfRecords>{{map.total}}</sru:numberOfRecords>
+    {{#if map.records}}
+    <sru:records>
+        {{#each map.records}}
+        <sru:recordData>
+            <sru:recordSchema>{{recordschema}}</sru:recordSchema>
+            <sru:recordPacking>{{recordpacking}}</sru:recordPacking>
+            <sru:recordData>{{sourcexml}}</sru:recordData>
+            <sru:extraRecordData><score>{{score}}</score></sru:extraRecordData>
+        </sru:recordData>
+        {{/each}}
+    </sru:records>
+    {{/if}}
+</sru:searchRetrieveResponse>

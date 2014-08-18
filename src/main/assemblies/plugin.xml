@@ -13,6 +13,9 @@
             <scope>compile</scope>
             <includes>
                 <include>org.xbib.elasticsearch.plugin</include>
+                <include>com.fasterxml.jackson.dataformat</include>
+                <include>com.fasterxml.jackson.core</include>
+                <include>org.codehaus.woodstox</include>
                 <include>org.xbib:handlebars</include>
                 <include>org.antlr:antlr4-runtime</include>
             </includes>

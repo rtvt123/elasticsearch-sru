@@ -36,7 +36,7 @@ public class FacetsGenerator implements Visitor {
     }
 
     public void startFacets() throws IOException {
-        builder.startObject("aggs");
+        builder.startObject("aggregations");
     }
 
     public void endFacets() throws IOException {
@@ -145,7 +145,6 @@ public class FacetsGenerator implements Visitor {
         builder.endObject();
         return this;
     }
-
 
     private Map<String,Integer> parseFacet(String spec) {
         Map<String,Integer> m = new HashMap<String,Integer>();

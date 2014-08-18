@@ -1,25 +1,23 @@
-package org.xbib.query.sru;
+package org.xbib.elasticsearch.rest.sru.searchretrieve;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Constants for SEarch/Retrieve
+ * Constants for SearchRetrieve
  *
  */
 public interface SearchRetrieveConstants {
     
-    String NS_URI = "http://www.loc.gov/zing/srw/";
-    
-    String NS_PREFIX = "srw";
-    
-    String SEARCH_RETRIEVE_COMMAND = "searchRetrieve";
-    
-    String SCAN_COMMAND = "scan";
-    
     String OPERATION_PARAMETER = "operation";
-    
+
+    String SEARCH_RETRIEVE_COMMAND = "searchRetrieve";
+
+    String SCAN_COMMAND = "scan";
+
+    String EXPLAIN_COMMAND = "explain";
+
     /**
      * The version of the request, and a triple by the client that
      * it wants the response to be less than, or preferably equal to, 
@@ -334,12 +332,14 @@ public interface SearchRetrieveConstants {
         put("mads",URI.create("info:srw/schema/1/mads-v1.0"));
         put("isohold",URI.create("info:srw/schema/5/iso20775-v1.0"));
         put("pam",URI.create("info:srw/schema/11/pam-v2.1"));
+        put("xbib-es", URI.create("http://xbib.org/ns/sru/elasticsearch/source/1.0/"));
     }};
     
     Map<String,URI> RECORD_SCHEMA_NAMESPACES = new HashMap<String,URI>() {{
         put("mods",URI.create("http://www.loc.gov/mods/v3"));
         put("mx",URI.create("info:lc/xmlns/marcxchange-v1"));
         put("marcxml",URI.create("http://www.loc.gov/MARC21/slim"));
+        put("xbibes", URI.create("http://xbib.org/ns/sru/elasticsearch/source/1.0/"));
     }};
 
 }

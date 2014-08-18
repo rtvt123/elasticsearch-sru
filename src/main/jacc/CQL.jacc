@@ -1,1 +1,288 @@
-%{import java.io.Reader;%}%package org.xbib.query.cql%token NL %token <String> LPAR RPAR SLASH%token <String> AND OR NOT PROX%token <String> SORTBY%token <String> GE LE NE EXACT LT GT EQ NAMEDCOMPARITORS%token <String> SIMPLESTRING QUOTEDSTRING%token <Long> INTEGER%token <Double> FLOAT%left OR%left AND PROX%left NOT%type <SortedQuery> sortedQuery%type <Query> cqlQuery%type <SortSpec> sortSpec%type <SingleSpec> singleSpec%type <PrefixAssignment> prefixAssignment%type <ScopedClause> scopedClause%type <BooleanGroup> booleanGroup%type <SearchClause> searchClause%type <Comparitor> comparitor%type <Relation> relation%type <Modifier> modifier%type <ModifierList> modifierList%type <Index> index%type <Term> term%type <Identifier> identifier%type <SimpleName> simpleName%type <String> quotedString%start cql%%/* CQL 2.0 */cql: cqlQuery {        this.cql = $1;        $$ = this.cql;    };/*           cql-query          = query [sort-spec]*/cqlQuery: query sortSpec {        $$ = new CQLQuery($1, $2);    }    | query {        $$ = new CQLQuery($1);    };/*                    query = *prefix-assignment search-clause-group      search-clause-group = search-clause-group Boolean-modified subquery | subquery                 subquery = "(" query ")" / search-clause            search-clause = [index relation-modifed] search-term              search-term = simple-string / quoted-string*/query: prefixAssignment searchClauseGroup {        $$ = new Query($1, $2);    }    | searchClauseGroup {        $$ = new Query($1);    };searchClauseGroup: searchClauseGroup booleanModified subQuery {    }    | subQuery {    };subQuery: LPAR query RPAR | searchClausesearchClause: index relationModified searchTerm | searchTermsearchTerm: simpleString | quotedString/*                sort-spec =  sort-by 1*index-modified                  sort-by = "sortby"*/sortSpec: SORTBY indexModified {        $$ = new SortSpec($1, $2);    };/*indexModified ::= index modifierList | index*/indexModified: index modifierList {        $$ = new SingleSpec($1, $2);    }    | index {        $$ = new SingleSpec($1);    };/*cqlQuery ::= prefixAssignment cqlQuery | scopedClause*/cqlQuery: prefixAssignment cqlQuery {        $$ = new Query($1, $2);    }    | scopedClause {        $$ = new Query($1);    };/*prefixAssignment ::= '>' prefix '=' uri | '>' uri*/prefixAssignment: GT term EQ term {        $$ = new PrefixAssignment($2, $4);    }    | GT term {        $$ = new PrefixAssignment($2);    };/*scopedClause ::= scopedClause booleanGroup searchClause | searchClause*/scopedClause: scopedClause booleanGroup searchClause {        $$ = new ScopedClause($1, $2, $3 );    }    | searchClause {        $$ = new ScopedClause($1);    };/*booleanGroup ::= boolean modifierList | boolean*/booleanGroup: boolean modifierList {        $$ = new BooleanGroup(BooleanOperator.forToken($1), $2);    }    | boolean {        $$ = new BooleanGroup(BooleanOperator.forToken($1));    };/*boolean ::= 'and' | 'or' | 'not' | 'prox'*/boolean: AND | OR | NOT | PROX ;/*searchClause ::= '(' cqlQuery ')' | index relation searchTerm | searchTerm*/searchClause: LPAR cqlQuery RPAR {        $$ = new SearchClause($2);    }    | index relation term {        $$ = new SearchClause($1, $2, $3);    }    | term {        $$ = new SearchClause($1);    };/*relation ::= comparitor modifierList | comparitor*/relation: comparitor modifierList {        $$ = new Relation($1, $2);    }    | comparitor {        $$ = new Relation($1);    };/*comparitor ::= comparitorSymbol | namedComparitor*/comparitor: comparitorSymbol {        $$ = Comparitor.forToken($1);    }    | namedComparitor {        $$ = Comparitor.forToken($1);    };comparitorSymbol: EQ | LT | GT | GE | LE | NE | EXACT ;namedComparitor: NAMEDCOMPARITORS ;/*modifierList ::= modifierList modifier | modifier*/modifierList: modifierList modifier {        $$ = new ModifierList($1,$2);    }    | modifier {        $$ = new ModifierList($1);    };/*modifier ::= '/' modifierName [comparitorSymbol modifierValue]*/modifier:  SLASH simpleName comparitorSymbol term {        $$ = new Modifier($2, Comparitor.forToken($3), $4);    }    | SLASH simpleName {        $$ = new Modifier($2);    };index: simpleName {        $$ = new Index($1);    };/*term ::= identifier | 'and' | 'or' | 'not' | 'prox'*/term: identifier {        $$ = new Term($1);    }    | boolean {        $$ = new Term(BooleanOperator.forToken($1).getToken());    }    | INTEGER {        $$ = new Term($1);    }    | FLOAT {        $$ = new Term($1);    };/*identifier ::= simpleName | quotedString*/identifier: simpleName {        $$ = new Identifier($1);    }    | quotedString {        $$ = new Identifier($1);    };simpleName: SIMPLESTRING {        $$ = new SimpleName($1);    };quotedString: QUOTEDSTRING {        $$ = $1;    };%%    private CQLLexer lexer;    private SortedQuery cql;    public CQLParser(String query) {        this(new StringReader(query));    }    public CQLParser(Reader reader) {        this.lexer = new CQLLexer(reader);        lexer.nextToken();    }    public void yyerror (String error) {        throw new SyntaxException("CQL error at "            + "[" + lexer.getLine() + "," + lexer.getColumn() +"]"            + ": " + (yyerrno >= 0 ? yyerrmsgs[yyerrno] : error)            + ": " + lexer.getSemantic());    }    public SortedQuery getCQLQuery() {        return cql;    }
+%{
+import java.io.Reader;
+%}
+%package org.xbib.query.cql
+
+%token NL 
+%token <String> LPAR RPAR SLASH
+%token <String> AND OR NOT PROX
+%token <String> SORTBY
+%token <String> GE LE NE EXACT LT GT EQ NAMEDCOMPARITORS
+%token <String> SIMPLESTRING QUOTEDSTRING
+%token <Long> INTEGER
+%token <Double> FLOAT
+
+%left OR
+%left AND PROX
+%left NOT
+
+%type <SortedQuery> sortedQuery
+%type <Query> cqlQuery
+%type <SortSpec> sortSpec
+%type <SingleSpec> singleSpec
+%type <PrefixAssignment> prefixAssignment
+%type <ScopedClause> scopedClause
+%type <BooleanGroup> booleanGroup
+%type <SearchClause> searchClause
+%type <Comparitor> comparitor
+%type <Relation> relation
+%type <Modifier> modifier
+%type <ModifierList> modifierList
+%type <Index> index
+%type <Term> term
+%type <Identifier> identifier
+%type <SimpleName> simpleName
+%type <String> quotedString
+
+%start cql
+
+%%
+
+/* CQL 2.0 */
+
+cql: cqlQuery {
+        this.cql = $1;
+        $$ = this.cql;
+    }
+;
+
+/*
+           cql-query          = query [sort-spec]
+*/
+cqlQuery: query sortSpec {
+        $$ = new CQLQuery($1, $2);
+    }
+    | query {
+        $$ = new CQLQuery($1);
+    }
+;
+
+/*
+                    query = *prefix-assignment search-clause-group
+      search-clause-group = search-clause-group Boolean-modified subquery | subquery
+                 subquery = "(" query ")" / search-clause
+            search-clause = [index relation-modifed] search-term
+              search-term = simple-string / quoted-string
+*/
+query: prefixAssignment searchClauseGroup {
+        $$ = new Query($1, $2);
+    }
+    | searchClauseGroup {
+        $$ = new Query($1);
+    }
+;
+
+searchClauseGroup: searchClauseGroup booleanModified subQuery {
+    }
+    | subQuery {
+    }
+;
+
+subQuery: LPAR query RPAR | searchClause
+
+searchClause: index relationModified searchTerm | searchTerm
+
+searchTerm: simpleString | quotedString
+
+/*
+                sort-spec =  sort-by 1*index-modified
+                  sort-by = "sortby"
+*/
+sortSpec: SORTBY indexModified {
+        $$ = new SortSpec($1, $2);
+    }
+;
+
+/*
+indexModified ::= index modifierList | index
+*/
+indexModified: index modifierList {
+        $$ = new SingleSpec($1, $2);
+    }
+    | index {
+        $$ = new SingleSpec($1);
+    }
+;
+
+/*
+cqlQuery ::= prefixAssignment cqlQuery | scopedClause
+*/
+cqlQuery: prefixAssignment cqlQuery {
+        $$ = new Query($1, $2);
+    }
+    | scopedClause {
+        $$ = new Query($1);
+    }
+;
+
+/*
+prefixAssignment ::= '>' prefix '=' uri | '>' uri
+*/
+prefixAssignment: GT term EQ term {
+        $$ = new PrefixAssignment($2, $4);
+    }
+    | GT term {
+        $$ = new PrefixAssignment($2);
+    }
+;
+
+/*
+scopedClause ::= scopedClause booleanGroup searchClause | searchClause
+*/
+scopedClause: scopedClause booleanGroup searchClause {
+        $$ = new ScopedClause($1, $2, $3 );
+    }
+    | searchClause {
+        $$ = new ScopedClause($1);
+    }
+;
+
+/*
+booleanGroup ::= boolean modifierList | boolean
+*/
+booleanGroup: boolean modifierList {
+        $$ = new BooleanGroup(BooleanOperator.forToken($1), $2);
+    }
+    | boolean {
+        $$ = new BooleanGroup(BooleanOperator.forToken($1));
+    }
+;
+
+/*
+boolean ::= 'and' | 'or' | 'not' | 'prox'
+*/
+boolean: AND | OR | NOT | PROX ;
+
+/*
+searchClause ::= '(' cqlQuery ')' | index relation searchTerm | searchTerm
+*/
+searchClause: LPAR cqlQuery RPAR {
+        $$ = new SearchClause($2);
+    }
+    | index relation term {
+        $$ = new SearchClause($1, $2, $3);
+    }
+    | term {
+        $$ = new SearchClause($1);
+    }
+;
+
+/*
+relation ::= comparitor modifierList | comparitor
+*/
+relation: comparitor modifierList {
+        $$ = new Relation($1, $2);
+    }
+    | comparitor {
+        $$ = new Relation($1);
+    }
+;
+
+/*
+comparitor ::= comparitorSymbol | namedComparitor
+*/
+comparitor: comparitorSymbol {
+        $$ = Comparitor.forToken($1);
+    }
+    | namedComparitor {
+        $$ = Comparitor.forToken($1);
+    }
+;
+
+comparitorSymbol: EQ | LT | GT | GE | LE | NE | EXACT ;
+
+namedComparitor: NAMEDCOMPARITORS ;
+
+/*
+modifierList ::= modifierList modifier | modifier
+*/
+modifierList: modifierList modifier {
+        $$ = new ModifierList($1,$2);
+    }
+    | modifier {
+        $$ = new ModifierList($1);
+    }
+;
+
+/*
+modifier ::= '/' modifierName [comparitorSymbol modifierValue]
+*/
+modifier:  SLASH simpleName comparitorSymbol term {
+        $$ = new Modifier($2, Comparitor.forToken($3), $4);
+    }
+    | SLASH simpleName {
+        $$ = new Modifier($2);
+    }
+;
+
+index: simpleName {
+        $$ = new Index($1);
+    }
+;
+
+/*
+term ::= identifier | 'and' | 'or' | 'not' | 'prox'
+*/
+term: identifier {
+        $$ = new Term($1);
+    }
+    | boolean {
+        $$ = new Term(BooleanOperator.forToken($1).getToken());
+    }
+    | INTEGER {
+        $$ = new Term($1);
+    }
+    | FLOAT {
+        $$ = new Term($1);
+    }
+;
+
+/*
+identifier ::= simpleName | quotedString
+*/
+identifier: simpleName {
+        $$ = new Identifier($1);
+    }
+    | quotedString {
+        $$ = new Identifier($1);
+    }
+;
+
+simpleName: SIMPLESTRING {
+        $$ = new SimpleName($1);
+    }
+;
+
+quotedString: QUOTEDSTRING {
+        $$ = $1;
+    }
+;
+
+%%
+
+        private CQLLexer lexer;
+
+        private String input;
+
+        private SortedQuery cql;
+
+        public CQLParser(String input) {
+            this.input = input;
+            this.lexer = new CQLLexer(new StringReader(input));
+            lexer.nextToken();
+        }
+
+        public void yyerror (String error) {
+            throw new SyntaxException("CQL syntax error at "
+                + "[" + lexer.getLine() + "," + lexer.getColumn() +"] in\""
+                + input
+                + "\": "
+                + (yyerrno >= 0 ? yyerrmsgs[yyerrno] : error)
+                + ": " + lexer.getSemantic());
+        }
+
+        public SortedQuery getCQLQuery() {
+            return cql;
+        }
+
+

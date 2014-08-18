@@ -8,8 +8,8 @@ import org.elasticsearch.common.network.NetworkUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.Node;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 
 import java.net.URI;
 import java.util.Map;
@@ -33,35 +33,28 @@ public abstract class AbstractNodeTest {
 
     private Map<String, InetSocketTransportAddress> httpAddresses = newHashMap();
 
-    @AfterClass
-    public void closeNodes() {
-        closeAllNodes();
-    }
-
-    protected void setClusterName() {
-        this.cluster = "test-cql-cluster-" + NetworkUtils.getLocalAddress().getHostName() + "-" + clusterCount.incrementAndGet();
-    }
-
-    protected String getClusterName() {
-        return cluster;
-    }
-
-    @BeforeClass
+    @Before
     public void startNodes() throws Exception {
-        setClusterName();
+        cluster = "test-sru-cluster-" + NetworkUtils.getLocalAddress().getHostName() + "-" + clusterCount.incrementAndGet();
         startNode("1");
-
     }
 
-    protected URI getHttpAddressOfNode(String id) {
-        InetSocketTransportAddress address = httpAddresses.get(id);
-        return URI.create("http://" + address.address().getHostName() + ":" + (address.address().getPort()));
+    @After
+    public void closeNodes() {
+        for (Client client : clients.values()) {
+            client.close();
+        }
+        clients.clear();
+        for (Node node : nodes.values()) {
+            node.close();
+        }
+        nodes.clear();
     }
 
     public Node startNode(String id) {
         Node node = buildNode(id).start();
         NodesInfoRequest nodesInfoRequest = new NodesInfoRequest().transport(true);
-        NodesInfoResponse response = client(id).admin().cluster().nodesInfo(nodesInfoRequest).actionGet();
+        NodesInfoResponse response = clients.get(id).admin().cluster().nodesInfo(nodesInfoRequest).actionGet();
         NodeInfo nodeInfo = response.iterator().next();
         Object obj = nodeInfo.getTransport().getAddress().publishAddress();
         if (obj instanceof InetSocketTransportAddress) {
@@ -75,8 +68,20 @@ public abstract class AbstractNodeTest {
     }
 
     public Node buildNode(String id) {
-        Settings finalSettings = settingsBuilder()
-                .put("cluster.name", getClusterName())
+        Node node = nodeBuilder().settings(settings()).build();
+        nodes.put(id, node);
+        clients.put(id, node.client());
+        return node;
+    }
+
+    protected URI getHttpAddressOfNode(String id) {
+        InetSocketTransportAddress address = httpAddresses.get(id);
+        return URI.create("http://" + address.address().getHostName() + ":" + (address.address().getPort()));
+    }
+
+    public Settings settings() {
+        return settingsBuilder()
+                .put("cluster.name", cluster)
                 .put("index.number_of_shards", 1)
                 .put("index.number_of_replica", 0)
                 .put("cluster.routing.schedule", "50ms")
@@ -85,10 +90,6 @@ public abstract class AbstractNodeTest {
                 .put("http.enabled", true)
                 .put("discovery.zen.multicast.enabled", false)
                 .build();
-        Node node = nodeBuilder().settings(finalSettings).build();
-        nodes.put(id, node);
-        clients.put(id, node.client());
-        return node;
     }
 
     public Node node(String id) {
@@ -99,14 +100,5 @@ public abstract class AbstractNodeTest {
         return clients.get(id);
     }
 
-    public void closeAllNodes() {
-        for (Client client : clients.values()) {
-            client.close();
-        }
-        clients.clear();
-        for (Node node : nodes.values()) {
-            node.close();
-        }
-        nodes.clear();
-    }
+
 }

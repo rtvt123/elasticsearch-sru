@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sru:searchRetrieveResponse
+        xmlns:sru="http://docs.oasis-open.org/ns/search-ws/sruResponse"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/sruResponse http://www.loc.gov/standards/sru/sru-2-0/schemas/sruResponse.xsd">
+    <sru:version>2.0</sru:version>
+    <sru:numberOfRecords>{{map.total}}</sru:numberOfRecords>
+    {{#if map.records}}
+    <sru:records>
+        {{#each map.records}}
+        <sru:record>
+            <sru:recordSchema>{{recordschema}}</sru:recordSchema>
+            <sru:recordPacking>{{recordpacking}}</sru:recordPacking>
+            <sru:recordData>{{sourcexml}}</sru:recordData>
+            <sru:recordIdentifier>{{index}}/{{type}}/{{id}}</sru:recordIdentifier>
+        </sru:record>
+        {{/each}}
+    </sru:records>
+    {{/if}}
+    {{#if map.facets}}
+    <sru:facetedResults xmlns:facet="http://docs.oasis-open.org/ns/search-ws/facetedResults"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/facetedResults http://www.loc.gov/standards/sru/sru-2-0/schemas/facetedResults.xsd">
+        <facet:facets>
+            {{#each map.facets}}
+             <facet:facet>
+                 <facet:index>{{name}}</facet:index>
+                 <facet:terms>
+                     {{#each buckets}}
+                         <facet:term>
+                             <facet:actualTerm>{{term}}</facet:actualTerm>
+                             <facet:requestUrl><![CDATA[{{requestUrl}}]]></facet:requestUrl>
+                             <facet:count>{{count}}</facet:count>
+                         </facet:term>
+                     {{/each}}
+                 </facet:terms>
+             </facet:facet>
+            {{/each}}
+        </facet:facets>
+    </sru:facetedResults>
+    {{/if}}
+</sru:searchRetrieveResponse>

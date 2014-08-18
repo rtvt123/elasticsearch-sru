@@ -48,7 +48,14 @@ public class SortGenerator implements Visitor {
     public void visit(Name node) {
         try {
             if (modifiers.isEmpty()) {
-                builder.value(node.getName());
+                System.err.println("sort ==> " + node.getName());
+                builder.startObject()
+                        .field(node.getName())
+                        .startObject()
+                        .field("ignore_unmapped", true)
+                        .field("missing", "_last")
+                        .endObject()
+                        .endObject();
             } else {
                 builder.startObject().field(node.getName()).startObject();
                 while (!modifiers.isEmpty()) {

@@ -175,16 +175,13 @@ public class ElasticsearchFilterGenerator implements Visitor {
                 StringBuilder sb = new StringBuilder();
                 Node modifier = stack.pop();
                 while (modifier instanceof Modifier) {
-                    Node modifierName = ((Modifier) modifier).getName();
-                    //if (modifierName.toString().startsWith("mod.")) {
-                        sb.append('.').append(modifier.toString());
-                        modifier = stack.pop();
-                    //} else {
-                    //    break;
-                    //}
+                    if (sb.length() > 0) {
+                        sb.append('.');
+                    }
+                    sb.append(modifier.toString());
+                    modifier = stack.pop();
                 }
-                // push modified index to stack
-                String modifiable = modifier.toString() + sb.toString();
+                String modifiable = sb.toString();
                 stack.push(new Name(modifiable));
                 stack.push(op);
             }

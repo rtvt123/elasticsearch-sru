@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sru:explainResponse 
+     xmlns:sru="http://www.loc.gov/zing/srw/"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.loc.gov/zing/srw/ http://www.loc.gov/standards/sru/xmlFiles/srw-types.xsd">
+    <sru:version>{{sru.version}}</sru:version>
+    <sru:record>
+        <sru:recordSchema>http://explain.z3950.org/dtd/2.0/</sru:recordSchema>
+        <sru:recordPacking>xml</sru:recordPacking>
+        <sru:recordData>
+            <z:explain xmlns:z="http://explain.z3950.org/dtd/2.0/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://explain.z3950.org/dtd/2.0/ http://zeerex.z3950.org/dtd/zeerex-2.0.xsd"
+                    authoritative="true">
+                <z:serverInfo>
+                    <z:host>{{sru.host}}</z:host>
+                    <z:port>{{sru.port}}</z:port>
+                    <z:database>{{sru.database}}</z:database>
+                </z:serverInfo>
+                <z:databaseInfo>
+                    <z:title>{{sru.databaseinfo.title}}</z:title>
+                    <z:description>{{sru.databaseinfo.description}}</z:description>
+                    <z:author>{{sru.databaseinfo.author}}</z:author>
+                    <z:contact>{{sru.databaseinfo.contact}}</z:contact>
+                    <z:history>{{sru.databaseinfo.history}}</z:history>
+                </z:databaseInfo>      
+                <z:indexInfo>
+                    {{#each sru.indexinfo.set}}
+                        <z:set identifier="{{identifier}}" name="{{name}}"></z:set>
+                    {{/each}}
+                    {{#each sru.indexinfo.index}}
+                        <z:index>
+                            <z:title>{{title}}</z:title>
+                            <z:map><z:name set="{{set}}">{{name}}</z:name></z:map>
+                        </z:index>
+                    {{/each}}
+                </z:indexInfo>
+                <z:schemaInfo>
+                    {{#each sru.schemainfo.schema}}
+                        <z:schema identifier="{{identifier}}" sort="false" name="{{name}}"><z:title>{{title}}</z:title></z:schema>
+                    {{/each}}
+                </z:schemaInfo>
+                <z:configInfo>
+                    <z:default type="numberOfRecords">{{sru.configinfo.numberofrecords}}</z:default>
+                </z:configInfo>
+            </z:explain>
+        </sru:recordData>
+    </sru:record>
+</sru:explainResponse>

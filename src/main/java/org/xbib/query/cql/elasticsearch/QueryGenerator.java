@@ -59,9 +59,11 @@ public class QueryGenerator implements Visitor {
                 case DATETIME:
                     builder.value(token.getDate());
                     break;
-                default:
+                case STRING:
                     builder.value(token.getString());
                     break;
+                default:
+                    throw new IOException("unknown token type: " + token);
             }
         } catch (IOException e) {
             throw new SyntaxException(e.getMessage(), e);
@@ -124,8 +126,8 @@ public class QueryGenerator implements Visitor {
                             String field = arg1.toString();
                             String value = arg2 != null ? arg2.toString() : "";
                             builder.startObject("simple_query_string")
-                                    .field("field",field)
                                     .field("query", value)
+                                    .field("fields",new String[]{field})
                                     .field("default_operator", "and")
                                     .endObject();
                             break;
@@ -135,8 +137,8 @@ public class QueryGenerator implements Visitor {
                             String value = arg2 != null ? arg2.toString() : "";
                             builder.startObject("bool").startObject("must_not");
                             builder.startObject("simple_query_string")
-                                    .field("field",field)
                                     .field("query", value)
+                                    .field("fields",new String[]{field})
                                     .field("default_operator", "and")
                                     .endObject();
                             builder.endObject().endObject();
@@ -144,20 +146,20 @@ public class QueryGenerator implements Visitor {
                         }
                         case ALL: {
                             String field = arg1.toString();
-                            String value = arg2 != null ? arg2.toString() : "";
+                            String value = tok2 != null ? tok2.getString() : "";
                             builder.startObject("simple_query_string")
-                                    .field("field",field)
                                     .field("query", value)
+                                    .field("fields",new String[]{field})
                                     .field("default_operator", "and")
                                     .endObject();
                             break;
                         }
                         case ANY: {
                             String field = arg1.toString();
-                            String value = arg2 != null ? arg2.toString() : "";
+                            String value = tok2 != null ? tok2.getString() : "";
                             builder.startObject("simple_query_string")
-                                    .field("field",field)
                                     .field("query", value)
+                                    .field("fields",new String[]{field})
                                     .field("default_operator", "or")
                                     .endObject();
                             break;
@@ -168,7 +170,7 @@ public class QueryGenerator implements Visitor {
                             if (tok2 != null) {
                                 if (tok2.isProtected()) {
                                     builder.startObject("match_phrase")
-                                            .field("query", tok2.getString())
+                                            .field("query", tok2.toString())
                                             .field("slop", 0)
                                             .endObject();
                                 } else if (tok2.isAll()) {
