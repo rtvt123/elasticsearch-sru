@@ -128,4 +128,4 @@ unix and facet.creator = "off"|{"from":0,"size":10,"query":{"bool":{"must":{"sim
 unix and facet.creator = "on" and facet.subject = "on" and facet.date = "off"|{"from":0,"size":10,"query":{"bool":{"must":{"bool":{"must":{"bool":{"must":{"simple_query_string":{"query":"unix","fields":["cql.allIndexes"],"default_operator":"and"}}}}}}}},"aggregations":{"myfacet":"myvalue"}}
 unix and facet.date = on|{"from":0,"size":10,"query":{"bool":{"must":{"simple_query_string":{"query":"unix","fields":["cql.allIndexes"],"default_operator":"and"}}}},"aggregations":{"myfacet":"myvalue"}}
 (cql.allIndexes = "")|{"from":0,"size":10,"query":{"simple_query_string":{"query":"\"\"","fields":["cql.allIndexes"],"default_operator":"and"}}}
-cql.allIndexes all 3125294126|{["from":0,"size":10,"query":{"simple_query_string":{"query":"3125294126","fields":["cql.allIndexes"],"default_operator":"and"}}]}
+cql.allIndexes all 3125294126|{"from":0,"size":10,"query":{"simple_query_string":{"query":"3125294126","fields":["cql.allIndexes"],"default_operator":"and"}}}
