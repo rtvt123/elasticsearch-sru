@@ -107,8 +107,23 @@ public class Token implements Node {
         this.tokenClass = EnumSet.of(TokenClass.NORMAL);
     }
 
-    public String getString() {        
-        return value;
+    /**
+     * Same as toString(), but ignore stringvalue
+     */
+    public String getString() {
+        StringBuilder sb = new StringBuilder();
+        if (booleanvalue != null) {
+            sb.append(booleanvalue);
+        } else if (longvalue != null) {
+            sb.append(longvalue);
+        } else if (doublevalue != null) {
+            sb.append(doublevalue);
+        } else if (datevalue != null) {
+            sb.append(DateUtil.formatDateISO(datevalue));
+        } else if (value != null) {
+            sb.append(value);
+        }
+        return sb.toString();
     }
 
     public Boolean getBoolean() {

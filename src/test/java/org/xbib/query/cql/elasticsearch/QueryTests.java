@@ -123,7 +123,6 @@ public class QueryTests extends Assert {
         parser.getCQLQuery().accept(generator);
         String elasticsearchQuery = generator.getSourceResult();
         logger.info("{} --> {}", cql, elasticsearchQuery);
-        //System.err.println(cql+"|"+elasticsearchQuery);
         assertEquals(elasticsearchQuery, expected);
     }
 

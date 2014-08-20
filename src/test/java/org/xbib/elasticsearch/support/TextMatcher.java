@@ -65,7 +65,6 @@ public class TextMatcher {
                     if (b1 != b2) {
                         return false;
                     }
-                    System.err.print(Character.toString((char) b2));
                 }
                 buf1.compact();
                 buf2.compact();

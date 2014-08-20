@@ -48,7 +48,6 @@ public class SortGenerator implements Visitor {
     public void visit(Name node) {
         try {
             if (modifiers.isEmpty()) {
-                System.err.println("sort ==> " + node.getName());
                 builder.startObject()
                         .field(node.getName())
                         .startObject()
